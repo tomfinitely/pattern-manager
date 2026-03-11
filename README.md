@@ -1,11 +1,11 @@
 # Pattern Manager
-Contributors: wpengine, ryankienstra, mikeday, dreamwhisper, mmcalister, johnstonphilip
+Contributors: wpengine, ryankienstra, mikeday, dreamwhisper, mmcalister, johnstonphilip, tfinley
 Donate link: https://wpengine.com
 Tags: pattern, patterns, pattern design, pattern builder, block patterns
-Requires at least: 6.1
-Tested up to: 6.3
-Stable tag: 0.3.2
-Requires PHP: 7.4
+Requires at least: 6.4
+Tested up to: 6.9
+Stable tag: 0.4.0
+Requires PHP: 8.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -113,6 +113,16 @@ Yes, you will need to have WordPress 6.1 or later installed to take advantage of
 2. Easily assign pattern categories, keywords, descriptions, and more.
 
 ## Changelog
+
+### 0.4.0
+* The editor sidebar now exposes all pattern metadata fields: categories, keywords, description, viewport width, post types, and block transforms.
+* The pattern editor canvas renders at the theme's wide width rather than the narrower content width, giving a more useful editing environment for wider patterns.
+* Fixed a bug where renaming a pattern would zero out its content.
+* Fixed a bug where saving pattern categories triggered a full image-sync pass, causing slow saves.
+* Fixed a bug where debug plugins such as Query Monitor would inject output into the pattern preview iframe.
+* The Post Types selector now shows only user-facing post types, excluding internal WordPress system types.
+* Fixed a visual bug where WordPress admin input styles bled into the category, keyword, post type, and transforms fields.
+* The pattern action bar in the admin grid now wraps to two rows when cards are narrow.
 
 ### 0.3.2
 * Pattern Manager now uses its own update mechanism from WP Engine servers. 
