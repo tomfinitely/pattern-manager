@@ -1,4 +1,7 @@
-import { render } from '@wordpress/element';
+import { createRoot } from '@wordpress/element';
 import App from './components/App';
 
-render( <App />, document.getElementById( 'pattern-manager-app' ) );
+const container = document.getElementById( 'pattern-manager-app' );
+if ( container ) {
+	createRoot( container ).render( <App /> );
+}

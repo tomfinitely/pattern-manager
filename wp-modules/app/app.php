@@ -64,10 +64,10 @@ function pattern_manager_app() {
 	$css_ver = filemtime( $module_dir_path . 'js/build/index.css' );
 	wp_enqueue_style( 'pattern_manager_style', $css_url, array( 'wp-edit-blocks' ), $css_ver );
 
-	wp_localize_script(
+	wp_add_inline_script(
 		'pattern-manager',
-		'patternManager',
-		get_app_state()
+		'var patternManager = ' . wp_json_encode( get_app_state() ) . ';',
+		'before'
 	);
 
 	echo '<div id="pattern-manager-app"></div>';

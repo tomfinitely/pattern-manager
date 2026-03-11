@@ -10,20 +10,21 @@
   "license": "GPL-2.0-or-later",
   "devDependencies": {
     "@types/jest": "^29.5.0",
-    "@types/react-test-renderer": "^17.0.2",
-    "@wordpress/scripts": "^26.18.0",
-    "postcss-cli": "^8.3.1",
-    "prettier": "^2.5.1",
-    "react-test-renderer": "^17.0.2"
+    "@types/react": "^18.0.0",
+    "@types/react-test-renderer": "^18.0.0",
+    "@wordpress/scripts": "^31.0.0",
+    "postcss-cli": "^11.0.0",
+    "prettier": "^3.0.0",
+    "react-test-renderer": "^18.0.0"
   },
   "dependencies": {
     "@loadable/component": "^5.15.3",
-    "@wordpress/components": "^19.4.0",
-    "@wordpress/element": "^4.0.4",
-    "@wordpress/i18n": "^4.3.1",
-    "@wordpress/icons": "^9.13.0",
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-select": "^5.2.2"
+    "@wordpress/components": "^32.0.0",
+    "@wordpress/element": "^6.0.0",
+    "@wordpress/i18n": "^6.0.0",
+    "@wordpress/icons": "^11.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-select": "^5.7.0"
   }
 }

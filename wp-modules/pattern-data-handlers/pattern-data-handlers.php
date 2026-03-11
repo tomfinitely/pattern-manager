@@ -127,11 +127,36 @@ function format_pattern_data( $pattern_data, $file ) {
 }
 
 /**
+ * Returns the object cache key for the theme patterns.
+ *
+ * @return string
+ */
+function get_patterns_cache_key(): string {
+	return 'pm_theme_patterns_' . md5( get_stylesheet_directory() );
+}
+
+/**
+ * Invalidates the theme patterns object cache.
+ *
+ * @return void
+ */
+function invalidate_patterns_cache(): void {
+	wp_cache_delete( get_patterns_cache_key(), 'pattern-manager' );
+}
+
+/**
  * Get the pattern data for all patterns in a theme.
  *
  * @return array
  */
 function get_theme_patterns(): array {
+	$cache_key = get_patterns_cache_key();
+	$cached    = wp_cache_get( $cache_key, 'pattern-manager' );
+
+	if ( false !== $cached ) {
+		return $cached;
+	}
+
 	$patterns = array();
 
 	// Grab all the patterns in this theme.
@@ -143,6 +168,8 @@ function get_theme_patterns(): array {
 			$patterns[ $pattern['name'] ] = $pattern;
 		}
 	}
+
+	wp_cache_set( $cache_key, $patterns, 'pattern-manager' );
 
 	return $patterns;
 }
@@ -332,6 +359,8 @@ function update_pattern( $pattern ) {
 		FS_CHMOD_FILE
 	);
 
+	invalidate_patterns_cache();
+
 	return $pattern_file_created;
 }
 
@@ -344,7 +373,13 @@ function update_pattern( $pattern ) {
 function delete_pattern( string $pattern_name ): bool {
 	$wp_filesystem = \PatternManager\GetWpFilesystem\get_wp_filesystem_api();
 	$pattern_path  = get_pattern_path( $pattern_name );
-	return $wp_filesystem && $wp_filesystem->exists( $pattern_path ) && $wp_filesystem->delete( $pattern_path );
+	$deleted       = $wp_filesystem && $wp_filesystem->exists( $pattern_path ) && $wp_filesystem->delete( $pattern_path );
+
+	if ( $deleted ) {
+		invalidate_patterns_cache();
+	}
+
+	return $deleted;
 }
 
 /**
