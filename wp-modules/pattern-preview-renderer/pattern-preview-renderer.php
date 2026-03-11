@@ -26,6 +26,9 @@ function display_block_pattern_preview() {
 
 	check_admin_referer( 'pm_action_pattern_preview' );
 
+	// Prevent debug plugins (e.g. Query Monitor) from injecting their output into the preview iframe.
+	add_filter( 'qm/dispatch/html', '__return_false' );
+
 	$pattern_name = sanitize_text_field( wp_unslash( $_GET['pm_pattern_preview'] ) );
 	$pattern      = \PatternManager\PatternDataHandlers\get_pattern_by_name( $pattern_name );
 

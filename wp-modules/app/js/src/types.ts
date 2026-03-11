@@ -13,6 +13,7 @@ export type InitialPatternManager = {
 		deletePatternEndpoint: string;
 		updateDismissedSitesEndpoint: string;
 		updateDismissedThemesEndpoint: string;
+		updatePatternCategoriesEndpoint: string;
 	};
 	apiNonce: string;
 	previewNonce: string;
@@ -55,4 +56,5 @@ export type PatternsProps = {
 export type QueriedCategories = {
 	label: string;
 	name: string;
+	pm_custom?: boolean;
 }[];

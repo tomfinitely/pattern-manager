@@ -18,7 +18,11 @@ use function \PatternManager\GetEnviroment\get_environment_meta_key;
 use function \PatternManager\GetVersionControl\get_dismissed_themes;
 use function \PatternManager\GetVersionControl\get_version_control_meta_key;
 use function \PatternManager\GetWpFilesystem\get_wp_filesystem_api;
+use function PatternManager\PatternDataHandlers\get_pattern_by_name;
+use function PatternManager\PatternDataHandlers\get_pattern_path;
+use function PatternManager\PatternDataHandlers\invalidate_patterns_cache;
 use function PatternManager\PatternDataHandlers\tree_shake_theme_images;
+use function PatternManager\PatternDataHandlers\update_pattern;
 
 // Exit if accessed directly.
 if ( ! defined( 'ABSPATH' ) ) {
@@ -86,6 +90,30 @@ function register_routes() {
 
 	register_rest_route(
 		$namespace,
+		'/update-pattern-categories',
+		array(
+			'methods'             => 'POST',
+			'callback'            => __NAMESPACE__ . '\update_pattern_categories',
+			'permission_callback' => __NAMESPACE__ . '\permission_check',
+			'args'                => array(
+				'patternName' => array(
+					'required'          => true,
+					'type'              => 'string',
+					'description'       => __( 'The pattern to update', 'pattern-manager' ),
+					'validate_callback' => 'is_string',
+				),
+				'categories'  => array(
+					'required'    => true,
+					'type'        => 'array',
+					'description' => __( 'Category slugs to assign', 'pattern-manager' ),
+					'items'       => array( 'type' => 'string' ),
+				),
+			),
+		)
+	);
+
+	register_rest_route(
+		$namespace,
 		'/update-dismissed-themes',
 		array(
 			'methods'             => 'POST',
@@ -132,6 +160,59 @@ function delete_pattern( $request ) {
 			200
 		)
 		: new WP_REST_Response( $is_success, 400 );
+}
+
+/**
+ * Updates the categories assigned to a single pattern.
+ *
+ * Updates only the `Categories:` header line in the raw PHP file, avoiding
+ * the expensive image-processing pipeline that update_pattern() triggers.
+ *
+ * @param WP_REST_Request $request Full data about the request.
+ * @return WP_REST_Response
+ */
+function update_pattern_categories( WP_REST_Request $request ): WP_REST_Response {
+	$params       = $request->get_params();
+	$pattern_name = sanitize_text_field( $params['patternName'] );
+	$new_cats     = array_map( 'sanitize_text_field', (array) $params['categories'] );
+
+	$pattern_path = get_pattern_path( $pattern_name );
+	if ( ! file_exists( $pattern_path ) ) {
+		return new WP_REST_Response(
+			array( 'message' => __( 'Pattern not found.', 'pattern-manager' ) ),
+			404
+		);
+	}
+
+	$raw         = file_get_contents( $pattern_path ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+	$cats_value  = implode( ', ', $new_cats );
+	$replacement = ' * Categories:' . ( '' !== $cats_value ? ' ' . $cats_value : '' );
+	$updated_raw = preg_replace( '/^ \* Categories:.*$/m', $replacement, $raw );
+
+	if ( null === $updated_raw ) {
+		return new WP_REST_Response(
+			array( 'message' => __( 'Failed to update pattern categories.', 'pattern-manager' ) ),
+			500
+		);
+	}
+
+	$wp_filesystem = get_wp_filesystem_api();
+	if ( ! $wp_filesystem ) {
+		return new WP_REST_Response(
+			array( 'message' => __( 'Filesystem unavailable.', 'pattern-manager' ) ),
+			500
+		);
+	}
+
+	$saved = $wp_filesystem->put_contents( $pattern_path, $updated_raw, FS_CHMOD_FILE );
+	invalidate_patterns_cache();
+
+	return $saved
+		? new WP_REST_Response( array( 'categories' => $new_cats ), 200 )
+		: new WP_REST_Response(
+			array( 'message' => __( 'Failed to update pattern categories.', 'pattern-manager' ) ),
+			500
+		);
 }
 
 /**

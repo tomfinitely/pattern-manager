@@ -29,9 +29,10 @@ function get_app_state() {
 		'apiNonce'                 => wp_create_nonce( 'wp_rest' ),
 		'previewNonce'             => wp_create_nonce( 'pm_action_pattern_preview' ),
 		'apiEndpoints'             => array(
-			'deletePatternEndpoint'         => get_rest_url( false, 'pattern-manager/v1/delete-pattern/' ),
-			'updateDismissedSitesEndpoint'  => get_rest_url( false, 'pattern-manager/v1/update-dismissed-sites/' ),
-			'updateDismissedThemesEndpoint' => get_rest_url( false, 'pattern-manager/v1/update-dismissed-themes/' ),
+			'deletePatternEndpoint'              => get_rest_url( false, 'pattern-manager/v1/delete-pattern/' ),
+			'updateDismissedSitesEndpoint'       => get_rest_url( false, 'pattern-manager/v1/update-dismissed-sites/' ),
+			'updateDismissedThemesEndpoint'      => get_rest_url( false, 'pattern-manager/v1/update-dismissed-themes/' ),
+			'updatePatternCategoriesEndpoint'    => get_rest_url( false, 'pattern-manager/v1/update-pattern-categories/' ),
 		),
 		'siteUrl'                  => get_bloginfo( 'url' ),
 		'adminUrl'                 => admin_url(),

@@ -1,5 +1,4 @@
 import { useState } from '@wordpress/element';
-import { __ } from '@wordpress/i18n';
 import { patternManager } from '../globals';
 import getHeaders from '../utils/getHeaders';
 import removePattern from '../utils/removePattern';
@@ -17,8 +16,32 @@ export default function usePatterns( initialPatterns: Patterns ) {
 		} );
 	}
 
+	async function updatePatternCategories(
+		patternName: Pattern[ 'name' ],
+		categories: string[]
+	) {
+		// Optimistic update.
+		setPatternsData( {
+			...patternsData,
+			[ patternName ]: {
+				...patternsData[ patternName ],
+				categories,
+			},
+		} );
+
+		return fetch(
+			patternManager.apiEndpoints.updatePatternCategoriesEndpoint,
+			{
+				method: 'POST',
+				headers: getHeaders(),
+				body: JSON.stringify( { patternName, categories } ),
+			}
+		);
+	}
+
 	return {
 		data: patternsData,
 		deletePattern,
+		updatePatternCategories,
 	};
 }

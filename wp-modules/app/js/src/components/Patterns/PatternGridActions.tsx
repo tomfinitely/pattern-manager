@@ -6,6 +6,9 @@ import { Button } from '@wordpress/components';
 // Hooks
 import usePmContext from '../../hooks/usePmContext';
 
+// Components
+import PatternCategoryEditor from './PatternCategoryEditor';
+
 // Types
 import type { Pattern } from '../../types';
 import { patternManager } from '../../globals';
@@ -85,8 +88,12 @@ export default function PatternGridActions( { patternData }: Props ) {
 						icon={ trash }
 						size={ 30 }
 					/>
-					<span className="item-action-button-text">Delete</span>
+					<span className="item-action-button-text">
+						{ __( 'Delete', 'pattern-manager' ) }
+					</span>
 				</Button>
+
+				<PatternCategoryEditor patternData={ patternData } />
 			</div>
 		</div>
 	);

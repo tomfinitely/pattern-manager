@@ -11,6 +11,7 @@ declare(strict_types=1);
 namespace PatternManager\Editor;
 
 use WP_Post;
+use WP_REST_Request;
 use function PatternManager\GetWpFilesystem\get_wp_filesystem_api;
 use function PatternManager\PatternDataHandlers\get_pattern_by_name;
 use function PatternManager\PatternDataHandlers\get_pattern_defaults;
@@ -46,23 +47,31 @@ add_action( 'the_post', __NAMESPACE__ . '\populate_pattern_from_file' );
 /**
  * Saves the pattern to the .php file, and also removes the mocked post required for the WP editing UI.
  *
- * @param int $post_id The post ID.
- * @param WP_Post $post The post.
+ * @param WP_Post         $post    The post.
+ * @param WP_REST_Request $request The REST request that triggered this save.
  */
-function save_pattern_to_file( WP_Post $post ) {
+function save_pattern_to_file( WP_Post $post, WP_REST_Request $request ) {
 	if ( get_pattern_post_type() !== $post->post_type ) {
 		return;
 	}
 
 	$name    = $post->post_name;
 	$pattern = get_pattern_by_name( $name );
+
+	// When only metadata changes (e.g. a rename), Gutenberg omits `content` from
+	// the REST PATCH because it wasn't edited. The DB holds '' (cleared after the
+	// last save), so $post->post_content would be empty here. Preserve the existing
+	// file content in that case to avoid zeroing the pattern out.
+	$existing_content = $pattern ? ( $pattern['content'] ?? '' ) : '';
+	$content          = $request->has_param( 'content' ) ? $post->post_content : $existing_content;
+
 	update_pattern(
 		array_merge(
 			// Only set the slug to the name for new patterns.
 			// Patterns created without PM might have a different slug and name.
 			$pattern ? $pattern : [ 'slug' => prepend_textdomain( $name ) ],
 			[
-				'content' => $post->post_content,
+				'content' => $content,
 				'name'    => $name,
 			],
 			$post->post_title
@@ -82,7 +91,7 @@ function save_pattern_to_file( WP_Post $post ) {
 
 	tree_shake_theme_images( get_wp_filesystem_api(), 'copy_dir' );
 }
-add_action( 'rest_after_insert_' . get_pattern_post_type(), __NAMESPACE__ . '\save_pattern_to_file' );
+add_action( 'rest_after_insert_' . get_pattern_post_type(), __NAMESPACE__ . '\save_pattern_to_file', 10, 2 );
 
 /**
  * Saves a meta value to the pattern file, instead of the DB.
