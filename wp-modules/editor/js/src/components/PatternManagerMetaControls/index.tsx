@@ -67,7 +67,6 @@ export default function PatternManagerMetaControls() {
 				handleChange={ updatePostMeta }
 			/>
 			<PostTypesPanel
-				blockTypes={ postMeta.blockTypes }
 				postTypeOptions={ queriedPostTypes }
 				postTypes={ postMeta.postTypes }
 				handleChange={ updatePostMeta }

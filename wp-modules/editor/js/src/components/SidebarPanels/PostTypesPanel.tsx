@@ -2,7 +2,7 @@ import { __ } from '@wordpress/i18n';
 import { PluginDocumentSettingPanel } from '@wordpress/edit-post';
 import { Spinner } from '@wordpress/components';
 import Select from 'react-select';
-import { HelperTooltip, ReverseTooltip } from '../Tooltips';
+import { HelperTooltip } from '../Tooltips';
 
 import type { BaseSidebarProps, AdditionalSidebarProps } from './types';
 import type { ReactNode } from 'react';
@@ -12,12 +12,11 @@ import type { ReactNode } from 'react';
  * Custom post types and certain core types are displayed as toggles.
  */
 export default function PostTypesPanel( {
-	blockTypes,
 	children,
 	postTypeOptions,
 	postTypes,
 	handleChange,
-}: BaseSidebarProps< 'postTypes' | 'blockTypes' > &
+}: BaseSidebarProps< 'postTypes' > &
 	AdditionalSidebarProps< 'postTypeOptions' > & {
 		children: ReactNode;
 	} ) {
@@ -38,37 +37,14 @@ export default function PostTypesPanel( {
 					isMulti
 					isClearable
 					closeMenuOnSelect={ false }
+					classNamePrefix="pm-select"
 					aria-label={ __( 'Select post types', 'pattern-manager' ) }
 					value={ postTypes?.map( ( postType ) => {
-						return {
-							...postTypeOptions.find(
-								( matchedPostType ) =>
-									matchedPostType.value === postType
-							),
-							// Conditionally make wp_template post type non-removable.
-							// Add a custom label with Tooltip.
-							...( ( postType === 'wp_template' &&
-								blockTypes?.some( ( blockType ) =>
-									blockType.includes( 'core/template-part' )
-								) && {
-									label: (
-										<ReverseTooltip
-											helperText={ __(
-												'Required for "core/template-part" transforms (block types).',
-												'pattern-manager'
-											) }
-											helperTitle={ __(
-												'Templates',
-												'pattern-manager'
-											) }
-											icon="lock"
-										/>
-									),
-									isFixed: true,
-								} ) ||
-								'' ),
-						};
-					} ) }
+						return postTypeOptions.find(
+							( matchedPostType ) =>
+								matchedPostType.value === postType
+						);
+					} ).filter( Boolean ) }
 					options={ postTypeOptions }
 					onChange={ ( postTypeSelections ) => {
 						handleChange(
@@ -82,29 +58,8 @@ export default function PostTypesPanel( {
 					styles={ {
 						menu: ( base ) => ( {
 							...base,
-							// Without this z-index value, the dropdown is transparent.
 							zIndex: 100,
 						} ),
-						multiValue: ( base, state ) => {
-							return state.data.isFixed
-								? { ...base, backgroundColor: 'gray' }
-								: base;
-						},
-						multiValueLabel: ( base, state ) => {
-							return state.data.isFixed
-								? {
-										...base,
-										fontWeight: 'bold',
-										color: 'white',
-										paddingRight: 6,
-								  }
-								: base;
-						},
-						multiValueRemove: ( base, state ) => {
-							return state.data.isFixed
-								? { ...base, display: 'none' }
-								: base;
-						},
 					} }
 				/>
 			) : (

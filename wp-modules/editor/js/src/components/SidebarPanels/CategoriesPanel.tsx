@@ -35,6 +35,7 @@ export default function CategoriesPanel( {
 					isMulti
 					isClearable
 					closeMenuOnSelect={ false }
+					classNamePrefix="pm-select"
 					aria-label={ __(
 						'Add Pattern Categories',
 						'pattern-manager'

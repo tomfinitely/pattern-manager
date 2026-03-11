@@ -36,6 +36,7 @@ export default function TransformsPanel( {
 					isMulti
 					isClearable
 					closeMenuOnSelect={ false }
+					classNamePrefix="pm-select"
 					aria-label={ __( 'Select block types', 'pattern-manager' ) }
 					value={ blockTypes?.map( ( blockType ) => {
 						// Hide block type related to the post type modal.

@@ -1,4 +1,13 @@
 /* stylelint-disable */
+
+/* Prevent WP admin's input border/focus styles from bleeding into react-select controls */
+.pm-select__input-container input {
+	border: 0 !important;
+	box-shadow: none !important;
+	min-height: unset !important;
+	outline: none !important;
+	padding: 0 !important;
+}
 .edit-post-post-status,
 .edit-post-visual-editor__post-title-wrapper {
 	display: none !important;

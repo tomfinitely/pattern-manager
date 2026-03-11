@@ -18,43 +18,31 @@ export default function usePatternData( postMeta: PostMeta ) {
 	 * @see https://developer.wordpress.org/block-editor/reference-guides/core-blocks/
 	 */
 	const postTypes = useSelect( ( select: SelectQuery ) => {
-		const initialPostTypes = select( 'core' )
-			.getPostTypes( {
-				per_page: -1,
-			} )
-			?.map( ( postType ) => ( {
-				label: postType.name,
-				value: postType.slug,
-				isFixed: false,
-			} ) );
-
-		if ( initialPostTypes ) {
-			/**
-			 * Core post types that are inapplicable or not user accessible.
-			 *
-			 * Current core types for possible removal:
-			  'attachment', // Media
-			  'nav_menu_item',
-			  'wp_block', // Reusable blocks are a user-accessible post type
-			  'wp_template',
-			  'wp_template_part',
-			  'wp_navigation',
-			  'pm_pattern',
-			 */
-			const corePostTypesToRemove = [
-				'attachment',
-				'nav_menu_item',
-				'wp_navigation',
-				'pm_pattern',
-			];
-
-			const filteredPostTypes = initialPostTypes.filter( ( postType ) => {
-				// Filter out the unapplicable core post types.
-				return ! corePostTypesToRemove.includes( postType.value );
-			} );
-
-			return sortAlphabetically( filteredPostTypes, 'label' );
-		}
+		const rawTypes = select( 'core' ).getPostTypes( { per_page: -1 } );
+		if ( ! rawTypes ) return;
+		return sortAlphabetically(
+			rawTypes
+				.filter( ( postType ) => {
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
+					const v = ( postType as any ).visibility;
+					// The REST API visibility object exposes show_ui and
+					// show_in_nav_menus. Post types intended for real content
+					// (post, page, CPTs) have both set to true. Internal system
+					// types (wp_template, wp_font_face, attachment, nav_menu_item,
+					// etc.) always have show_in_nav_menus: false, so this filter
+					// excludes them without a static blocklist.
+					return (
+						v?.show_ui &&
+						v?.show_in_nav_menus &&
+						postType.slug !== 'pm_pattern'
+					);
+				} )
+				.map( ( postType ) => ( {
+					label: postType.name,
+					value: postType.slug,
+				} ) ),
+			'label'
+		);
 	}, [] );
 
 	/**
@@ -111,18 +99,6 @@ export default function usePatternData( postMeta: PostMeta ) {
 		);
 	}, [] );
 
-	/*
-	 * Boolean to catch when a template-part related block type is selected.
-	 * This is used to automatically select and disable the wp_template post type.
-	 */
-	const templatePartBlockTypeSelected =
-		postMeta?.blockTypes?.some(
-			( blockType ) => blockType !== 'core/post-content'
-		) &&
-		postMeta?.blockTypes?.some( ( blockType ) =>
-			blockType.includes( 'core/template-part' )
-		);
-
 	// Filter out non-existing post types that were previously saved to the pattern file.
 	// Prevents empty options from rendering in the dropdown list.
 	const filteredPostTypes = postTypes
@@ -134,18 +110,6 @@ export default function usePatternData( postMeta: PostMeta ) {
 		.filter( Boolean );
 
 	useEffect( () => {
-		// Automatically select the wp_template postType when a template-part blockType is selected.
-		// wp_template postType removal will also be disabled in the postType Select component.
-		if (
-			templatePartBlockTypeSelected &&
-			! postMeta?.postTypes?.includes( 'wp_template' )
-		) {
-			updatePostMeta( 'postTypes', [
-				...postMeta.postTypes,
-				'wp_template',
-			] );
-		}
-
 		// Update postMeta with filteredPostTypes if postMeta.postTypes does not loosely match.
 		if (
 			postMeta?.postTypes &&
@@ -157,11 +121,7 @@ export default function usePatternData( postMeta: PostMeta ) {
 		// We can ignore this because updatePostMeta is always created fresh on every render.
 		// NOTE: make sure that other dependencies required are added in the future, as the linter could miss them here.
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [
-		postMeta.postTypes,
-		templatePartBlockTypeSelected,
-		filteredPostTypes,
-	] );
+	}, [ postMeta.postTypes, filteredPostTypes ] );
 
 	function updatePostMeta(
 		metaKey: string,

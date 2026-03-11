@@ -24,6 +24,7 @@ export default function KeywordsPanel( {
 				components={ {
 					DropdownIndicator: null,
 				} }
+				classNamePrefix="pm-select"
 				inputValue={ keywordInputValue }
 				aria-label={ __( 'Add Pattern Keywords', 'pattern-manager' ) }
 				isClearable
