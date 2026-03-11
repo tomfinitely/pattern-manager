@@ -161,6 +161,29 @@ function save_metadata_to_pattern_file( $override, $post_id, $meta_key, $meta_va
 add_filter( 'update_post_metadata', __NAMESPACE__ . '\save_metadata_to_pattern_file', 10, 4 );
 
 /**
+ * In the pattern editor, promote contentSize to the theme's wideSize so patterns
+ * aren't artificially constrained to the theme's reading width. Wide/full patterns
+ * get proper canvas room; narrow patterns (buttons, cards) just sit at their natural
+ * size with more breathing room. alignfull blocks still break out completely.
+ * This filter only fires for pm_pattern posts and has no effect on front-end output.
+ *
+ * @param array                   $settings The block editor settings.
+ * @param \WP_Block_Editor_Context $context  The block editor context.
+ * @return array
+ */
+function set_pattern_editor_canvas_width( array $settings, $context ): array {
+	if ( ! isset( $context->post->post_type ) || get_pattern_post_type() !== $context->post->post_type ) {
+		return $settings;
+	}
+
+	$wide_size = $settings['__experimentalFeatures']['layout']['wideSize'] ?? '1200px';
+	$settings['__experimentalFeatures']['layout']['contentSize'] = $wide_size;
+
+	return $settings;
+}
+add_filter( 'block_editor_settings_all', __NAMESPACE__ . '\set_pattern_editor_canvas_width', 10, 2 );
+
+/**
  * Gets the metadata from the pattern file, not the DB.
  *
  * @param null|mixed $override The filtered metadata, or null to get meta from the DB.
